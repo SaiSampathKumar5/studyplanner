@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyMind — AI Study Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- ─── Sidebar ──────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">StudyMind</div>
+      <div class="logo-sub">AI Study Planner</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">
+        <div class="nav-label">Overview</div>
+        <div class="nav-item active" data-page="dashboard">
+          <span class="icon">🏠</span> Dashboard
+        </div>
+        <div class="nav-item" data-page="planner">
+          <span class="icon">📅</span> Planner
+          <span class="nav-badge" id="pending-badge">0</span>
+        </div>
+        <div class="nav-item" data-page="subjects">
+          <span class="icon">📚</span> Subjects
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Tools</div>
+        <div class="nav-item" data-page="pomodoro">
+          <span class="icon">⏱️</span> Pomodoro
+        </div>
+        <div class="nav-item" data-page="motivation">
+          <span class="icon">🏆</span> Motivation
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="pomo-mini">
+        <div class="pomo-mini-label">Focus Timer</div>
+        <div class="pomo-ring">
+          <svg viewBox="0 0 70 70" width="70" height="70">
+            <circle class="pomo-ring-track" cx="35" cy="35" r="28"/>
+            <circle class="pomo-ring-fill" id="mini-ring" cx="35" cy="35" r="28" stroke-dasharray="175.9" stroke-dashoffset="0"/>
+          </svg>
+        </div>
+        <div class="pomo-mini-time" id="mini-timer">25:00</div>
+        <div class="pomo-mode">
+          <button class="pomo-mode-btn active" onclick="setPomoMode('focus')">Focus</button>
+          <button class="pomo-mode-btn" onclick="setPomoMode('short')">Short</button>
+          <button class="pomo-mode-btn" onclick="setPomoMode('long')">Long</button>
+        </div>
+        <div class="pomo-mini-controls">
+          <button class="pomo-btn" id="mini-start" onclick="togglePomo()">▶</button>
+          <button class="pomo-btn" onclick="resetPomo()">↺</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─── Main Content ──────────────────────────────── -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-date" id="topbar-date"></div>
+      <button class="btn" id="topbar-action" onclick="openAddTaskModal()">+ Add Task</button>
+    </header>
+
+    <!-- ── Dashboard ─────────────────────── -->
+    <section class="page active" id="page-dashboard">
+      <div class="greeting">
+        <h1 id="greeting-text">Good Morning, <span>Scholar!</span></h1>
+        <p id="greeting-sub">Ready to conquer your goals today?</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card" style="--c: var(--accent)">
+          <div class="stat-icon">✅</div>
+          <div class="stat-value" id="stat-done">0</div>
+          <div class="stat-label">Tasks Completed</div>
+        </div>
+        <div class="stat-card" style="--c: var(--accent2)">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-value" id="stat-pending">0</div>
+          <div class="stat-label">Tasks Pending</div>
+        </div>
+        <div class="stat-card" style="--c: var(--accent3)">
+          <div class="stat-icon">📚</div>
+          <div class="stat-value" id="stat-subjects">0</div>
+          <div class="stat-label">Active Subjects</div>
+        </div>
+        <div class="stat-card" style="--c: var(--accent4)">
+          <div class="stat-icon">🍅</div>
+          <div class="stat-value" id="stat-pomos">0</div>
+          <div class="stat-label">Pomodoros Today</div>
+        </div>
+      </div>
+      <div class="dashboard-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Subject Progress</div>
+          </div>
+          <div id="dash-progress">
+            <div class="empty-state"><div class="empty-icon">📊</div><p>Add subjects to track progress</p></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Today's Tasks</div>
+            <button class="btn btn-sm" onclick="navigate('planner')">View All</button>
+          </div>
+          <div id="dash-today-tasks">
+            <div class="empty-state"><div class="empty-icon">📝</div><p>No tasks scheduled today</p></div>
+          </div>
+        </div>
+        <div class="card quote-card">
+          <div class="card-title" style="margin-bottom:14px">✨ Daily Inspiration</div>
+          <div class="quote-text" id="daily-quote">Loading...</div>
+          <div class="quote-author" id="daily-author">—</div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Weekly Overview</div>
+          </div>
+          <div id="week-overview-bars" style="display:flex;gap:8px;align-items:flex-end;height:100px;padding-top:10px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Planner ────────────────────────── -->
+    <section class="page" id="page-planner">
+      <div class="planner-tabs">
+        <div class="planner-tab active" onclick="switchPlannerView('week',this)">Weekly</div>
+        <div class="planner-tab" onclick="switchPlannerView('daily',this)">Daily</div>
+      </div>
+      <div id="planner-week">
+        <div class="week-grid" id="week-grid"></div>
+      </div>
+      <div id="planner-daily" style="display:none">
+        <div class="daily-layout">
+          <div class="time-slots" id="time-slots"></div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Unscheduled</div>
+              <button class="btn btn-sm" onclick="openAddTaskModal()">+ Add</button>
+            </div>
+            <div id="unscheduled-tasks"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Subjects ───────────────────────── -->
+    <section class="page" id="page-subjects">
+      <div class="add-subject-form" style="margin-bottom:24px">
+        <div class="form-group">
+          <label class="form-label">Subject Name</label>
+          <input class="form-input" id="new-subj-name" placeholder="e.g. Mathematics" style="min-width:180px">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Icon</label>
+          <div class="emoji-picker" id="emoji-picker">
+            <span class="emoji-opt selected" data-e="📐">📐</span>
+            <span class="emoji-opt" data-e="🔬">🔬</span>
+            <span class="emoji-opt" data-e="📖">📖</span>
+            <span class="emoji-opt" data-e="💻">💻</span>
+            <span class="emoji-opt" data-e="🎨">🎨</span>
+            <span class="emoji-opt" data-e="🌍">🌍</span>
+            <span class="emoji-opt" data-e="🎵">🎵</span>
+            <span class="emoji-opt" data-e="⚗️">⚗️</span>
+            <span class="emoji-opt" data-e="🧠">🧠</span>
+            <span class="emoji-opt" data-e="📊">📊</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Color</label>
+          <div class="color-picker" id="color-picker">
+            <div class="color-opt selected" data-c="#7c5cfc" style="background:#7c5cfc"></div>
+            <div class="color-opt" data-c="#fc5c7d" style="background:#fc5c7d"></div>
+            <div class="color-opt" data-c="#5cf4c8" style="background:#5cf4c8"></div>
+            <div class="color-opt" data-c="#fcb45c" style="background:#fcb45c"></div>
+            <div class="color-opt" data-c="#5cb8fc" style="background:#5cb8fc"></div>
+            <div class="color-opt" data-c="#c45cfc" style="background:#c45cfc"></div>
+          </div>
+        </div>
+        <button class="btn" onclick="addSubject()" style="margin-top:22px">+ Add Subject</button>
+      </div>
+      <div class="subjects-grid" id="subjects-grid">
+        <div class="empty-state" style="grid-column:1/-1">
+          <div class="empty-icon">📚</div><p>Add your first subject above</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Pomodoro ───────────────────────── -->
+    <section class="page" id="page-pomodoro">
+      <div class="pomo-full">
+        <div style="text-align:center;margin-bottom:8px">
+          <div class="pomo-mode" style="justify-content:center;gap:8px">
+            <button class="pomo-mode-btn active" id="fp-focus" onclick="setPomoMode('focus')">🎯 Focus</button>
+            <button class="pomo-mode-btn" id="fp-short" onclick="setPomoMode('short')">☕ Short Break</button>
+            <button class="pomo-mode-btn" id="fp-long" onclick="setPomoMode('long')">🌿 Long Break</button>
+          </div>
+        </div>
+        <div class="pomo-big-ring">
+          <svg viewBox="0 0 220 220" width="220" height="220">
+            <circle class="pomo-big-track" cx="110" cy="110" r="96"/>
+            <circle class="pomo-big-fill" id="big-ring" cx="110" cy="110" r="96" stroke-dasharray="603.2" stroke-dashoffset="0"/>
+          </svg>
+          <div class="pomo-big-label">
+            <div class="pomo-big-time" id="big-timer">25:00</div>
+            <div class="pomo-big-mode" id="big-mode">FOCUS</div>
+          </div>
+        </div>
+        <div class="pomo-sessions" id="pomo-sessions"></div>
+        <div class="pomo-controls">
+          <button class="pomo-big-btn pomo-reset-btn" onclick="resetPomo()">↺</button>
+          <button class="pomo-big-btn pomo-start-btn" id="big-start" onclick="togglePomo()">▶</button>
+          <button class="pomo-big-btn pomo-reset-btn" onclick="skipPomoSession()">⏭</button>
+        </div>
+        <div class="pomo-settings-card">
+          <div class="card-title">Timer Settings (minutes)</div>
+          <div class="pomo-settings-grid">
+            <div class="pomo-setting">
+              <label>Focus</label>
+              <input class="form-input pomo-setting" id="set-focus" type="number" value="25" min="1" max="120" onchange="updatePomoSettings()">
+            </div>
+            <div class="pomo-setting">
+              <label>Short Break</label>
+              <input class="form-input pomo-setting" id="set-short" type="number" value="5" min="1" max="30" onchange="updatePomoSettings()">
+            </div>
+            <div class="pomo-setting">
+              <label>Long Break</label>
+              <input class="form-input pomo-setting" id="set-long" type="number" value="15" min="1" max="60" onchange="updatePomoSettings()">
+            </div>
+          </div>
+        </div>
+        <div class="pomo-log" id="pomo-log">
+          <div class="card-title" style="margin-bottom:12px">Session Log</div>
+          <div id="pomo-log-list"><div class="empty-state"><p>No sessions yet</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Motivation ─────────────────────── -->
+    <section class="page" id="page-motivation">
+      <div class="motiv-header">
+        <div class="streak-card" style="display:flex;align-items:center;gap:20px;justify-content:center">
+          <div><div class="streak-fire">🔥</div></div>
+          <div>
+            <div class="streak-num" id="streak-num">0</div>
+            <div class="streak-label">Day Streak</div>
+          </div>
+        </div>
+        <div class="card" style="flex:2">
+          <div class="card-title" style="margin-bottom:16px">Overall Progress</div>
+          <div id="motiv-overall-progress">
+            <div class="empty-state"><p>Complete tasks to see progress</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="card-title" style="margin-bottom:16px">🏅 Achievements</div>
+      <div class="achievement-grid" id="achievements"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ── Add Task Modal ─────────────────────── -->
+<div class="modal-overlay" id="task-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add New Task</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-form">
+      <div class="form-group">
+        <label class="form-label">Task Name</label>
+        <input class="form-input" id="task-name" placeholder="e.g. Chapter 5 revision">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Subject</label>
+        <select class="form-input" id="task-subject">
+          <option value="">— No Subject —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Day</label>
+        <select class="form-input" id="task-day">
+          <option value="Mon">Monday</option>
+          <option value="Tue">Tuesday</option>
+          <option value="Wed">Wednesday</option>
+          <option value="Thu">Thursday</option>
+          <option value="Fri">Friday</option>
+          <option value="Sat">Saturday</option>
+          <option value="Sun">Sunday</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Priority</label>
+        <select class="form-input" id="task-priority">
+          <option value="low">Low</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn" onclick="saveTask()">Add Task</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
