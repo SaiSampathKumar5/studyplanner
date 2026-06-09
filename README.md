@@ -2,7 +2,6 @@
 
 A beautiful, modern, and feature-rich study planner designed to help students organize their study sessions, manage tasks efficiently, and stay motivated. Built with **pure HTML, CSS, and JavaScript** — no frameworks, no dependencies, no bloat.
 
-![StudyMind Preview](https://img.shields.io/badge/version-1.0.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Status](https://img.shields.io/badge/status-Active-success)
 
 ---
 
